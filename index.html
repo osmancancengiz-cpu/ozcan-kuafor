@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Özcan Erkek Kuaförü - Online Randevu Sistemi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="max-w-4xl mx-auto p-4 sm:p-6">
+        <!-- Başlık -->
+        <header class="bg-indigo-600 text-white p-4 rounded-xl shadow-md mb-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <h1 class="text-xl sm:text-2xl font-bold">✂️ Özcan Erkek Kuaförü</h1>
+            <div class="flex bg-indigo-700 p-1 rounded-lg">
+                <button onclick="sekmeDegistir('musteri')" id="btnMusteri" class="px-4 py-1.5 rounded-md text-sm font-semibold bg-white text-indigo-700 shadow">Müşteri Randevu Ekranı</button>
+                <button onclick="sekmeDegistir('admin')" id="btnAdmin" class="px-4 py-1.5 rounded-md text-sm font-semibold text-white hover:bg-indigo-600">Berber Paneli (Admin)</button>
+            </div>
+        </header>
+
+        <!-- MÜŞTERİ GÖRÜNÜMÜ -->
+        <div id="panelMusteri" class="bg-white p-6 rounded-xl shadow-md">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">Randevu Oluştur</h2>
+            <p class="text-gray-500 text-sm mb-6">Lütfen bilgilerinizi doldurun, randevunuz sisteme eklenecektir.</p>
+            
+            <form id="musteriForm" class="space-y-4 max-w-lg">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Adınız Soyadınız</label>
+                    <input type="text" id="mAd" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Örn: Mehmet Demir">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Telefon Numaranız</label>
+                    <input type="tel" id="mTel" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="0555...">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">İşlem / Hizmet</label>
+                    <select id="mHizmet" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <option value="Saç Kesimi">Saç Kesimi</option>
+                        <option value="Sakal Tıraşı">Sakal Tıraşı</option>
+                        <option value="Saç + Sakal">Saç + Sakal</option>
+                        <option value="Cilt Bakımı / Yıkama">Cilt Bakımı / Yıkama</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tarih</label>
+                        <input type="date" id="mTarih" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Saat</label>
+                        <input type="time" id="mSaat" required class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <button type="submit" id="btnGonder" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition">Randevu Talebi Gönder</button>
+            </form>
+        </div>
+
+        <!-- ADMIN (BERBER) GÖRÜNÜMÜ -->
+        <div id="panelAdmin" class="hidden bg-white p-6 rounded-xl shadow-md">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 border-b pb-3 gap-2">
+                <h2 class="text-xl font-bold text-gray-800">Randevu Defteri (Yönetim)</h2>
+                <div class="flex items-center gap-2">
+                    <label class="text-sm text-gray-600">Tarih Seç:</label>
+                    <input type="date" id="filtreTarih" class="text-sm px-3 py-1.5 border rounded-lg">
+                </div>
+            </div>
+
+            <div class="mb-6 bg-gray-50 p-4 rounded-xl border">
+                <h3 class="text-sm font-bold text-gray-700 mb-3">Hızlı Randevu Ekle</h3>
+                <form id="adminForm" class="grid grid-cols-1 sm:grid-cols-5 gap-3">
+                    <input type="text" id="aAd" placeholder="Müşteri Adı" required class="px-3 py-2 border rounded-lg text-sm">
+                    <input type="tel" id="aTel" placeholder="Telefon" class="px-3 py-2 border rounded-lg text-sm">
+                    <select id="aHizmet" class="px-3 py-2 border rounded-lg text-sm">
+                        <option value="Saç Kesimi">Saç Kesimi</option>
+                        <option value="Sakal Tıraşı">Sakal Tıraşı</option>
+                        <option value="Saç + Sakal">Saç + Sakal</option>
+                    </select>
+                    <input type="time" id="aSaat" required class="px-3 py-2 border rounded-lg text-sm">
+                    <button type="submit" class="bg-green-600 text-white py-2 rounded-lg text-sm font-semibold hover:bg-green-700">Ekle</button>
+                </form>
+            </div>
+            
+            <div id="randevuListesi" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- TELEGRAM BOT BİLGİLERİNİ BURAYA YAZACAKSIN ---
+        const TELEGRAM_TOKEN = "BURAYA_BOTFATHER_VERDIGI_TOKENI_YAZ";
+        const TELEGRAM_CHAT_ID = "BURAYA_USERINFO_VERDIGI_ID_YAZ";
+        // --------------------------------------------------
+
+        const bugun = new Date().toISOString().split('T')[0];
+        document.getElementById('mTarih').value = bugun;
+        document.getElementById('filtreTarih').value = bugun;
+
+        let randevular = JSON.parse(localStorage.getItem('ozcanKuaforRandevulari')) || [];
+
+        function sekmeDegistir(tur) {
+            const mPanel = document.getElementById('panelMusteri');
+            const aPanel = document.getElementById('panelAdmin');
+            const bMusteri = document.getElementById('btnMusteri');
+            const bAdmin = document.getElementById('btnAdmin');
+
+            if(tur === 'musteri') {
+                mPanel.classList.remove('hidden');
+                aPanel.classList.add('hidden');
+                bMusteri.className = "px-4 py-1.5 rounded-md text-sm font-semibold bg-white text-indigo-700 shadow";
+                bAdmin.className = "px-4 py-1.5 rounded-md text-sm font-semibold text-white hover:bg-indigo-600";
+            } else {
+                mPanel.classList.add('hidden');
+                aPanel.classList.remove('hidden');
+                bAdmin.className = "px-4 py-1.5 rounded-md text-sm font-semibold bg-white text-indigo-700 shadow";
+                bMusteri.className = "px-4 py-1.5 rounded-md text-sm font-semibold text-white hover:bg-indigo-600";
+                randevulariGoster();
+            }
+        }
+
+        // Telegram Bildirimi Gönderme Fonksiyonu
+        async function telegramaBildirimGonder(mesaj) {
+            if(TELEGRAM_TOKEN.includes("BURAYA") || TELEGRAM_CHAT_ID.includes("BURAYA")) return;
+            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+            try {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: mesaj,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            } catch (err) {
+                console.error("Bildirim gönderilemedi:", err);
+            }
+        }
+
+        // Müşteri Form Gönderimi
+        document.getElementById('musteriForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnGonder');
+            btn.innerText = "Gönderiliyor...";
+            btn.disabled = true;
+
+            const yeni = {
+                id: Date.now(),
+                musteriAdi: document.getElementById('mAd').value,
+                telefon: document.getElementById('mTel').value,
+                hizmet: document.getElementById('mHizmet').value,
+                tarih: document.getElementById('mTarih').value,
+                saat: document.getElementById('mSaat').value,
+                durum: 'Onay Bekliyor'
+            };
+            
+            randevular.push(yeni);
+            localStorage.setItem('ozcanKuaforRandevulari', JSON.stringify(randevular));
+
+            // Telegram mesajını hazırla
+            const bildirimMetni = `🚨 *Yeni Randevu Talebi!*\n\n` +
+                                 `👤 *Müşteri:* ${yeni.musteriAdi}\n` +
+                                 `📞 *Telefon:* ${yeni.telefon}\n` +
+                                 `✂️ *Hizmet:* ${yeni.hizmet}\n` +
+                                 `📅 *Tarih:* ${yeni.tarih}\n` +
+                                 `⏰ *Saat:* ${yeni.saat}`;
+
+            await telegramaBildirimGonder(bildirimMetni);
+
+            alert('Randevu talebiniz başarıyla alındı! Berber onayladığında kesinleşecektir.');
+            this.reset();
+            document.getElementById('mTarih').value = bugun;
+            btn.innerText = "Randevu Talebi Gönder";
+            btn.disabled = false;
+        });
+
+        // Admin Hızlı Ekleme
+        document.getElementById('adminForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const yeni = {
+                id: Date.now(),
+                musteriAdi: document.getElementById('aAd').value,
+                telefon: document.getElementById('aTel').value,
+                hizmet: document.getElementById('aHizmet').value,
+                tarih: document.getElementById('filtreTarih').value,
+                saat: document.getElementById('aSaat').value,
+                durum: 'Onaylandı'
+            };
+            randevular.push(yeni);
+            kaydetVeListele();
+            this.reset();
+        });
+
+        function kaydetVeListele() {
+            localStorage.setItem('ozcanKuaforRandevulari', JSON.stringify(randevular));
+            randevulariGoster();
+        }
+
+        function randevulariGoster() {
+            const secilenTarih = document.getElementById('filtreTarih').value;
+            const listeDiv = document.getElementById('randevuListesi');
+            listeDiv.innerHTML = '';
+
+            const filtreliler = randevular
+                .filter(r => r.tarih === secilenTarih)
+                .sort((a, b) => a.saat.localeCompare(b.saat));
+
+            if (filtreliler.length === 0) {
+                listeDiv.innerHTML = '<p class="text-gray-500 text-center py-6">Bu tarihe ait randevu bulunmuyor.</p>';
+                return;
+            }
+
+            filtreliler.forEach(r => {
+                const item = document.createElement('div');
+                let durumRenk = 'bg-yellow-50 border-yellow-200 text-yellow-800';
+                if(r.durum === 'Onaylandı') durumRenk = 'bg-green-50 border-green-200';
+                if(r.durum === 'İptal') durumRenk = 'bg-red-50 border-red-200 opacity-60';
+
+                item.className = `p-4 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 ${durumRenk}`;
+                
+                item.innerHTML = `
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-indigo-700 text-lg">${r.saat}</span>
+                            <span class="font-semibold text-gray-900 text-base">${r.musteriAdi}</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full font-medium ${r.durum === 'Onaylandı' ? 'bg-green-200 text-green-800' : r.durum === 'Onay Bekliyor' ? 'bg-yellow-200 text-yellow-800' : 'bg-red-200 text-red-800'}">${r.durum}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">📞 ${r.telefon || 'Belirtilmemiş'} | ✂️ <span class="font-medium">${r.hizmet}</span></p>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button onclick="durumDegistir(${r.id}, 'Onaylandı')" class="px-2.5 py-1 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium">Onayla</button>
+                        <button onclick="durumDegistir(${r.id}, 'İptal')" class="px-2.5 py-1 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 font-medium">İptal</button>
+                        <button onclick="randevuSil(${r.id})" class="px-2.5 py-1 text-xs bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">Sil</button>
+                    </div>
+                `;
+                listeDiv.appendChild(item);
+            });
+        }
+
+        function durumDegistir(id, yeniDurum) {
+            randevular = randevular.map(r => r.id === id ? {...r, durum: yeniDurum} : r);
+            kaydetVeListele();
+        }
+
+        function randevuSil(id) {
+            if(confirm('Bu randevuyu silmek istediğinize emin misiniz?')) {
+                randevular = randevular.filter(r => r.id !== id);
+                kaydetVeListele();
+            }
+        }
+
+        document.getElementById('filtreTarih').addEventListener('change', randevulariGoster);
+    </script>
+</body>
+</html>
